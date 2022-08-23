@@ -2,4 +2,13 @@ pub mod cli;
 pub use cli::Cli;
 
 pub mod init;
-pub use init::create_repo;
+pub use init::*;
+
+pub mod commit;
+pub use commit::*;
+
+pub mod workspace;
+pub use workspace::*;
+
+pub mod utility;
+pub use utility::*;

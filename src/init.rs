@@ -1,4 +1,4 @@
-use crate::cli::Init;
+use crate::{cli::Init, is_repo};
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::{
@@ -9,13 +9,15 @@ use std::{
 /// Create the directory structure of a repository.
 pub fn create_repo(init: Init) -> Result<()> {
     trace!("Creating directory structure");
+    debug!("Got arguments: {:?}", init);
+
     // Get the path.
     // If none is provided use `.` as default.
     let path = match init.path {
         Some(path) => path,
         None => PathBuf::from("."),
     };
-    info!("Path is {:?}", path);
+    debug!("Path is {:?}", path);
 
     // make path absolute
     let root_path = canonicalize(path).with_context(|| format!("Could not cannonicalize path!"))?;
@@ -24,8 +26,8 @@ pub fn create_repo(init: Init) -> Result<()> {
     debug!("git_path is {:?}", git_path);
 
     // check if this already is a repository.
-    if git_path.exists() {
-        bail!("'{:?}' is already a rit repository!", git_path);
+    if is_repo(&root_path)? {
+        bail!("'{:?}' is already a rit repository!", root_path);
     }
 
     // create basic structure

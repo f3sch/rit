@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 use log::*;
-use rit::*;
+use rit::{commit::make_commit, *};
 
 fn main() -> Result<()> {
     let args = Cli::parse();
@@ -14,9 +14,10 @@ fn main() -> Result<()> {
 
     match args.command {
         cli::Commands::Init(init) => {
-            info!("Initializing a repository!");
-            debug!("Got arguments: {:?}", init);
             create_repo(init)?;
+        }
+        cli::Commands::Commit(commit) => {
+            make_commit(commit)?;
         }
         cli::Commands::External(args) => {
             println!("Calling out to {:?} with {:?}", &args[0], &args[1..]);
