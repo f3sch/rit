@@ -20,7 +20,7 @@ pub fn create_repo(init: Init) -> Result<()> {
     debug!("Path is {:?}", path);
 
     // make path absolute
-    let root_path = canonicalize(path).with_context(|| format!("Could not cannonicalize path!"))?;
+    let root_path = canonicalize(path).with_context(|| "Could not cannonicalize path!")?;
     let git_path = root_path.join(".git");
     debug!("root_path is {:?}", root_path);
     debug!("git_path is {:?}", git_path);

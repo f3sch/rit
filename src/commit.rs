@@ -1,4 +1,4 @@
-use crate::{cli::Commit, is_repo, Workspace};
+use crate::{cli::Commit, is_repo, Database, Workspace};
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::env::current_dir;
@@ -10,7 +10,7 @@ pub fn make_commit(commit: Commit) -> Result<()> {
 
     // get current directory
     let root_path =
-        current_dir().with_context(|| format!("Could not get the current working directory!"))?;
+        current_dir().with_context(|| "Could not get the current working directory!")?;
     let git_path = root_path.join(".git");
     let db_path = git_path.join("objects");
     debug!("root_path is {:?}", root_path);
@@ -23,9 +23,9 @@ pub fn make_commit(commit: Commit) -> Result<()> {
     }
 
     // Get the current workspace.
-    let workspace = Workspace::new(root_path)?;
+    let workspace = Workspace::new(&root_path)?;
+    let _database = Database::new(&db_path)?;
     let list_files = workspace.get_list_files();
     debug!("File list {:?}", list_files);
-
     Ok(())
 }

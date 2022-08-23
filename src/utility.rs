@@ -15,15 +15,11 @@ pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
         .filter_map(|v| v.ok()) // is file ok
         .filter(|e| !is_ignored(e)) // is ignored
         .for_each(|entry| {
-            vec.push(entry.path().to_path_buf()); // add to vec
+            vec.push(entry.path().to_path_buf()); // add to `vec`
         });
 
-    for entry in WalkDir::new(path) {
-        println!("{:?}", entry.unwrap().path());
-    }
-
     // Warning for empty repository.
-    if vec.len() == 0 {
+    if vec.is_empty() {
         warn!("No files in repository!");
     }
 

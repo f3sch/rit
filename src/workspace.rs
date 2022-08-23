@@ -16,12 +16,12 @@ pub struct Workspace {
 
 impl Workspace {
     /// Create a new `Workspace` at `root_path`.
-    pub fn new(root_path: PathBuf) -> Result<Self> {
+    pub fn new(root_path: &PathBuf) -> Result<Self> {
         trace!("Creating the workspace.");
-        let list_files = get_files(&root_path);
+        let list_files = get_files(root_path);
 
         Ok(Self {
-            root_path,
+            root_path: root_path.to_owned(),
             list_files,
         })
     }
