@@ -32,7 +32,8 @@ pub fn create_repo(init: Init) -> Result<()> {
 
     // create basic structure
     for dir in ["objects", "refs"] {
-        create_dir_all(git_path.join(dir))?;
+        create_dir_all(git_path.join(dir))
+            .with_context(|| "Init: failed to create basic directory structure")?;
         debug!("Created directory '{}' under git_path", dir);
     }
 
