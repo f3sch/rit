@@ -22,6 +22,7 @@ pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
     if vec.is_empty() {
         warn!("No files in repository!");
     }
+    debug!("List of files: {:?}", vec);
 
     vec
 }
@@ -33,12 +34,25 @@ fn is_ignored(entry: &DirEntry) -> bool {
         return true;
     }
 
+    // ignore symlinks
+    if entry.path_is_symlink() {
+        return true;
+    }
+
+    let path = entry.path();
+    for spath in path.iter() {
+        if spath.to_str() == Some(".git") {
+            return true;
+        }
+    }
+
     let name = entry
         .file_name()
         .to_str()
         .expect("Could not convert entry name to str!");
+    debug!("Not ignored Filename is {}", name);
 
-    name == ".git"
+    false
 }
 
 /// Check if `path` is a rit repository.
