@@ -15,3 +15,9 @@ pub use utility::*;
 
 pub mod database;
 pub use database::*;
+
+pub mod blob;
+pub use blob::*;
+
+pub mod types;
+pub use types::*;

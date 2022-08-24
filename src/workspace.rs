@@ -1,6 +1,8 @@
 use crate::get_files;
 use anyhow::Result;
 use log::*;
+use std::fs::File;
+use std::io::prelude::*;
 use std::path::PathBuf;
 
 /// The workspace is responsible for the files in the working tree.
@@ -36,5 +38,16 @@ impl Workspace {
     /// Return the root of the repository.
     pub fn get_root_path(&self) -> &PathBuf {
         &self.root_path
+    }
+
+    /// Read the content of a file as bytes.
+    pub fn read_file(&self, path: &PathBuf) -> Result<Vec<u8>> {
+        trace!("Reading contents of file {:?}", path);
+        let mut f = File::open(path)?;
+        let mut buffer = Vec::new();
+
+        // read the whole content of the file
+        f.read_to_end(&mut buffer)?;
+        Ok(buffer)
     }
 }

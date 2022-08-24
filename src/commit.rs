@@ -1,4 +1,4 @@
-use crate::{cli::Commit, is_repo, Database, Workspace};
+use crate::{cli::Commit, *};
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::env::current_dir;
@@ -24,8 +24,14 @@ pub fn make_commit(commit: Commit) -> Result<()> {
 
     // Get the current workspace.
     let workspace = Workspace::new(&root_path)?;
-    let _database = Database::new(&db_path)?;
-    let list_files = workspace.get_list_files();
-    debug!("File list {:?}", list_files);
+    let database = Database::new(&db_path)?;
+
+    for file in workspace.get_list_files() {
+        debug!("Committing {:?} to database.", file);
+        let data = workspace.read_file(file)?;
+        let blob = &mut Blob::new(data);
+        database.store(blob)?;
+    }
+
     Ok(())
 }
