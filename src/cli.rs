@@ -10,6 +10,8 @@ pub mod init;
 pub use init::Init;
 pub mod commit;
 pub use commit::Commit;
+pub mod cat_file;
+pub use cat_file::CatFile;
 
 /// A fictional versioning CLI
 #[derive(Debug, Parser)] // requires `derive` feature
@@ -27,6 +29,7 @@ pub struct Cli {
 pub enum Commands {
     Init(Init),
     Commit(Commit),
+    CatFile(CatFile),
 
     #[clap(external_subcommand)]
     External(Vec<OsString>),

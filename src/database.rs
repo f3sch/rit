@@ -59,7 +59,7 @@ impl Database {
 
     /// Write object to `Database`.
     fn write_object(&self, hash: Digest, content: Vec<u8>) -> Result<()> {
-        trace!("Writing blob to database.");
+        trace!("Writing blob to database");
         // construct hash as valid utf-8 hex string
         let name = hex::encode(hash.as_ref());
         // construct object path
@@ -82,11 +82,14 @@ impl Database {
                 .write(true)
                 .create_new(true)
                 .open(&temp_name)?;
-            let compressed = ZlibEncoder::new(content, Compression::fast()).finish()?;
+            let mut compressed = ZlibEncoder::new(Vec::new(), Compression::fast());
+            compressed.write_all(&content)?;
+            let compressed = compressed.finish()?;
             file.write_all(&compressed)?;
             debug!("Written compressed content to temp_file.");
         } // file is closed here.
 
+        debug!("Rename temp_file to object_path");
         rename(temp_name, object_path)?;
 
         Ok(())

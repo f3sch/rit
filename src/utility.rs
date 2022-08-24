@@ -53,11 +53,13 @@ pub fn is_repo(root_path: &PathBuf) -> Result<bool> {
     }
     // check if this is actually a repository.
     if !git_path.exists() {
-        bail!("'{:?}' is not a rit repository!", git_path);
+        debug!("'{:?}' is not a rit repository!", git_path);
+        return Ok(false);
     }
     // is the database present
     if !db_path.exists() {
-        bail!("'{:?}' is missing!!", db_path);
+        debug!("'{:?}' is missing!!", db_path);
+        return Ok(false);
     }
 
     debug!("{:?} is a repository.", root_path);

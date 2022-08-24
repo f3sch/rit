@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 use log::*;
-use rit::{commit::make_commit, *};
+use rit::*;
 
 fn main() -> Result<()> {
     let args = Cli::parse();
@@ -18,6 +18,9 @@ fn main() -> Result<()> {
         }
         cli::Commands::Commit(commit) => {
             make_commit(commit)?;
+        }
+        cli::Commands::CatFile(cat_file) => {
+            print_object(cat_file)?;
         }
         cli::Commands::External(args) => {
             println!("Calling out to {:?} with {:?}", &args[0], &args[1..]);

@@ -7,6 +7,9 @@ pub use init::*;
 pub mod commit;
 pub use commit::*;
 
+pub mod cat_file;
+pub use cat_file::*;
+
 pub mod workspace;
 pub use workspace::*;
 
