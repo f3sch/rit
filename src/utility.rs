@@ -49,7 +49,7 @@ pub fn is_repo(root_path: &PathBuf) -> Result<bool> {
 
     // Does root even exists?
     if !root_path.exists() {
-        bail!("'{:?}' does not exists!", root_path);
+        bail!("Utility: '{:?}' does not exists!", root_path);
     }
     // check if this is actually a repository.
     if !git_path.exists() {
