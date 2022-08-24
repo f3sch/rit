@@ -26,12 +26,29 @@ pub fn make_commit(commit: Commit) -> Result<()> {
     let workspace = Workspace::new(&root_path)?;
     let database = Database::new(&db_path)?;
 
-    for file in workspace.get_list_files() {
-        debug!("Committing {:?} to database.", file);
-        let data = workspace.read_file(file)?;
+    // collect entries for the tree
+    let mut entries: Vec<Entry> = Vec::new();
+
+    for path in workspace.get_list_files() {
+        debug!("Committing {:?} to database.", path);
+        let data = workspace
+            .read_file(path)
+            .with_context(|| "Commit: could not read file in workspace")?;
         let blob = &mut Blob::new(data);
-        database.store(blob)?;
+
+        // store blob and set its oid
+        database
+            .store(blob)
+            .with_context(|| "Commit: Failed storing blob")?;
+
+        let entry = Entry::new(path.to_path_buf(), blob.get_oid().unwrap());
+        entries.push(entry);
     }
+
+    let tree = &mut Tree::new(entries);
+    database
+        .store(tree)
+        .with_context(|| "Commit: Database failed to store the new tree")?;
 
     Ok(())
 }

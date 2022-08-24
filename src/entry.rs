@@ -1,3 +1,4 @@
+use std::cmp::Ord;
 use std::path::PathBuf;
 
 /// `Entry` serves to package up information that `Tree` needs to about its
@@ -5,9 +6,10 @@ use std::path::PathBuf;
 ///             1. the filename
 ///             2. object id
 ///             3. file mode (hardcoded for now)
+#[derive(PartialEq, PartialOrd, Ord, Eq)]
 pub struct Entry {
     /// Name is the path to the entry
-    name: PathBuf,
+    name: String,
 
     /// Object id (hash)
     oid: String,
@@ -16,12 +18,15 @@ pub struct Entry {
 impl Entry {
     /// Create a new `Entry`.
     pub fn new(name: PathBuf, oid: String) -> Self {
-        Self { name, oid }
+        Self {
+            name: String::from(name.to_str().unwrap()),
+            oid,
+        }
     }
 
-    /// Get a reference to the name of the `Entry`.
-    pub fn get_name(&self) -> &PathBuf {
-        &self.name
+    /// Get the name of the `Entry`.
+    pub fn get_name(&self) -> String {
+        self.name.clone()
     }
 
     /// Get the oid of the `Entry`.

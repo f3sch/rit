@@ -27,3 +27,6 @@ pub use types::*;
 
 pub mod entry;
 pub use entry::*;
+
+pub mod tree;
+pub use tree::*;
