@@ -1,5 +1,5 @@
 use crate::Blob;
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use log::*;
@@ -23,7 +23,7 @@ impl Database {
 
         // is this really the database we want?
         if !db_path.exists() {
-            bail!("Database does not exist or is malformed!");
+            bail!("Database: {:?} does not exist or is malformed!", db_path);
         }
 
         Ok(Self {
@@ -52,7 +52,8 @@ impl Database {
         // calculate hash
         let hash = digest(&digest::SHA1_FOR_LEGACY_USE_ONLY, &content);
         debug!("Blob calculated hash: {:02x?}", hash.as_ref());
-        self.write_object(hash, content)?;
+        self.write_object(hash, content)
+            .with_context(|| "Database: Could not store blob")?;
 
         Ok(())
     }
@@ -72,7 +73,7 @@ impl Database {
 
         // if dirname does not exist create it
         if !dirname.exists() {
-            create_dir(dirname)?;
+            create_dir(dirname).with_context(|| "Database: Failed to create directory")?;
         }
 
         {
@@ -81,16 +82,27 @@ impl Database {
                 .read(true)
                 .write(true)
                 .create_new(true)
-                .open(&temp_name)?;
+                .open(&temp_name)
+                .with_context(|| "Database: Could not create file")?;
+            // create encoder
             let mut compressed = ZlibEncoder::new(Vec::new(), Compression::fast());
-            compressed.write_all(&content)?;
-            let compressed = compressed.finish()?;
-            file.write_all(&compressed)?;
+            // compress content
+            compressed
+                .write_all(&content)
+                .with_context(|| "Database: Unable to encode content")?;
+            // finish compression
+            let compressed = compressed
+                .finish()
+                .with_context(|| "Database: Could not finish encoding")?;
+            // write data to file
+            file.write_all(&compressed)
+                .with_context(|| "Database: Could not write compressed data to file")?;
             debug!("Written compressed content to temp_file.");
         } // file is closed here.
 
         debug!("Rename temp_file to object_path");
-        rename(temp_name, object_path)?;
+        rename(temp_name, object_path)
+            .with_context(|| "Database: Renaming of temp_name to object_path failed")?;
 
         Ok(())
     }
