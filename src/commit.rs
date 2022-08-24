@@ -19,7 +19,7 @@ pub fn make_commit(commit: Commit) -> Result<()> {
 
     // check if this is actually a repository.
     if !is_repo(&root_path)? {
-        bail!("{:?} is not a rit repository!", root_path);
+        bail!("Commit: {:?} is not a rit repository!", root_path);
     }
 
     // Get the current workspace.
