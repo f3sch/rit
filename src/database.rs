@@ -37,23 +37,23 @@ impl Database {
     }
 
     /// Store a `Blob` in the `Database`.
-    pub fn store(&self, blob: &mut Blob) -> Result<()> {
+    pub fn store(&self, object: &mut dyn Object) -> Result<()> {
         trace!("Storing blob.");
         let mut content = format!(
             "{} {}\0",
-            blob.get_type().as_string(),
-            blob.get_data().len(),
+            object.get_type().as_string(),
+            object.get_data().len(),
         )
         .as_bytes()
         .to_vec();
-        content.append(&mut blob.get_data().to_vec());
+        content.append(&mut object.get_data().to_vec());
         debug!("Content is: {:?}", content);
 
         // calculate hash
         // construct hash as valid utf-8 hex string
         let hash = hex::encode(digest(&digest::SHA1_FOR_LEGACY_USE_ONLY, &content));
         // set hash for blob
-        blob.set_oid(hash.clone());
+        object.set_oid(hash.clone());
         debug!("Blob calculated hash: {}", hash);
         self.write_object(hash, content)
             .with_context(|| "Database: Could not store blob")?;
