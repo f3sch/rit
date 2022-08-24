@@ -47,6 +47,7 @@ impl Database {
         .as_bytes()
         .to_vec();
         content.append(&mut blob.get_data().to_vec());
+        debug!("Content is: {:?}", content);
 
         // calculate hash
         let hash = digest(&digest::SHA1_FOR_LEGACY_USE_ONLY, &content);
@@ -87,6 +88,7 @@ impl Database {
         } // file is closed here.
 
         rename(temp_name, object_path)?;
+
         Ok(())
     }
 
