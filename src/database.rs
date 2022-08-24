@@ -1,4 +1,4 @@
-use crate::Blob;
+use crate::*;
 use anyhow::{bail, Context, Result};
 use flate2::write::ZlibEncoder;
 use flate2::Compression;

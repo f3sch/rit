@@ -22,18 +22,18 @@ impl Blob {
             oid: None,
         }
     }
+}
 
-    /// Return a reference to the data of the blob.
-    pub fn get_data(&self) -> &Vec<u8> {
-        &self.data
-    }
-
-    /// Return the type of
-    pub fn get_type(&self) -> Types {
+impl Object for Blob {
+    fn get_type(&self) -> Types {
         self.type_
     }
 
-    pub fn set_oid(&mut self, hash: String) {
+    fn get_data(&self) -> &Vec<u8> {
+        &self.data
+    }
+
+    fn set_oid(&mut self, hash: String) {
         self.oid = Some(hash);
     }
 }
