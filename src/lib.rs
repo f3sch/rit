@@ -24,3 +24,6 @@ pub use blob::*;
 
 pub mod types;
 pub use types::*;
+
+pub mod entry;
+pub use entry::*;
