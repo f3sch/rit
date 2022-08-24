@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use clap::Parser;
 use log::*;
 use rit::*;
@@ -14,16 +14,17 @@ fn main() -> Result<()> {
 
     match args.command {
         cli::Commands::Init(init) => {
-            create_repo(init)?;
+            create_repo(init).with_context(|| "Main: create_repo unsuccessful")?;
         }
         cli::Commands::Commit(commit) => {
-            make_commit(commit)?;
+            make_commit(commit).with_context(|| "Main: make_commit unsuccessful")?;
         }
         cli::Commands::CatFile(cat_file) => {
-            print_object(cat_file)?;
+            print_object(cat_file).with_context(|| "Main: print_object unsuccessful")?;
         }
         cli::Commands::External(args) => {
             println!("Calling out to {:?} with {:?}", &args[0], &args[1..]);
+            bail!("Main: No extra arguments are allowed!");
         }
     }
     Ok(())
