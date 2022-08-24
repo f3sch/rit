@@ -1,4 +1,5 @@
 use crate::*;
+use log::*;
 
 /// A `Blob` contains a file's contents.
 /// It will be stored by the `Database`.
@@ -26,14 +27,17 @@ impl Blob {
 
 impl Object for Blob {
     fn get_type(&self) -> Types {
+        trace!("Getting type");
         self.type_
     }
 
     fn get_data(&self) -> &Vec<u8> {
+        trace!("Getting data");
         &self.data
     }
 
     fn set_oid(&mut self, hash: String) {
+        trace!("Setting oid");
         self.oid = Some(hash);
     }
 }
