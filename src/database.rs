@@ -4,7 +4,7 @@ use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use log::*;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use ring::digest::{self, digest, Digest};
+use ring::digest::{self, digest};
 use std::fs::{rename, File};
 use std::io::prelude::*;
 use std::{fs::create_dir, path::PathBuf};
@@ -50,8 +50,11 @@ impl Database {
         debug!("Content is: {:?}", content);
 
         // calculate hash
-        let hash = digest(&digest::SHA1_FOR_LEGACY_USE_ONLY, &content);
-        debug!("Blob calculated hash: {:02x?}", hash.as_ref());
+        // construct hash as valid utf-8 hex string
+        let hash = hex::encode(digest(&digest::SHA1_FOR_LEGACY_USE_ONLY, &content));
+        // set hash for blob
+        blob.set_oid(hash.clone());
+        debug!("Blob calculated hash: {}", hash);
         self.write_object(hash, content)
             .with_context(|| "Database: Could not store blob")?;
 
@@ -59,12 +62,10 @@ impl Database {
     }
 
     /// Write object to `Database`.
-    fn write_object(&self, hash: Digest, content: Vec<u8>) -> Result<()> {
+    fn write_object(&self, hash: String, content: Vec<u8>) -> Result<()> {
         trace!("Writing blob to database");
-        // construct hash as valid utf-8 hex string
-        let name = hex::encode(hash.as_ref());
         // construct object path
-        let object_path = self.db_path.join(&name[0..2]).join(&name[2..]);
+        let object_path = self.db_path.join(&hash[0..2]).join(&hash[2..]);
         let dirname = object_path.parent().unwrap();
         let temp_name = dirname.join(Self::generate_temp_name());
         debug!("object_path is {:?}", object_path);

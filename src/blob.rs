@@ -1,5 +1,4 @@
 use crate::*;
-use ring::digest::Digest;
 
 /// A `Blob` contains a file's contents.
 /// It will be stored by the `Database`.
@@ -11,7 +10,7 @@ pub struct Blob {
     type_: Types,
 
     /// Unique oid of `Blob`.
-    oid: Option<Digest>,
+    oid: Option<String>,
 }
 
 impl Blob {
@@ -34,7 +33,7 @@ impl Blob {
         self.type_
     }
 
-    pub fn set_oid(&mut self, digest: Digest) {
-        self.oid = Some(digest);
+    pub fn set_oid(&mut self, hash: String) {
+        self.oid = Some(hash);
     }
 }
