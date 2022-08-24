@@ -1,5 +1,5 @@
 use crate::get_files;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use log::*;
 use std::fs::File;
 use std::io::prelude::*;
@@ -43,11 +43,12 @@ impl Workspace {
     /// Read the content of a file as bytes.
     pub fn read_file(&self, path: &PathBuf) -> Result<Vec<u8>> {
         trace!("Reading contents of file {:?}", path);
-        let mut f = File::open(path)?;
+        let mut f = File::open(path).with_context(|| "Workspace: Could not open file")?;
         let mut buffer = Vec::new();
 
         // read the whole content of the file
-        f.read_to_end(&mut buffer)?;
+        f.read_to_end(&mut buffer)
+            .with_context(|| "Workspace: Could not open file")?;
         Ok(buffer)
     }
 }
