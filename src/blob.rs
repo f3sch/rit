@@ -38,10 +38,6 @@ impl Object for Blob {
         &self.data
     }
 
-    fn get_data_len(&self) -> usize {
-        self.data.len()
-    }
-
     fn set_oid(&mut self, hash: String) {
         trace!("Setting oid of blob");
         self.oid = Some(hash);

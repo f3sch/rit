@@ -39,14 +39,12 @@ impl Database {
     /// Store a `Blob` in the `Database`.
     pub fn store(&self, object: &mut dyn Object) -> Result<()> {
         trace!("Storing Object.");
-        let mut content = format!(
-            "{} {}\0",
-            object.get_type().as_string(),
-            object.get_data_len(),
-        )
-        .as_bytes()
-        .to_vec();
-        content.extend(object.get_data());
+        let type_ = object.get_type().as_string();
+        let data = object.get_data();
+        let len = data.len();
+        let mut content = format!("{} {}", type_, len).as_bytes().to_vec();
+        content.push(b"\x00"[0]); // null terminate
+        content.extend(data);
         debug!("Content is: {:?}", content);
 
         // calculate hash

@@ -46,18 +46,15 @@ impl Object for Tree {
             .entries
             .iter()
             .flat_map(|e| {
-                let mut pre = format!("{MODE} {:?}", e.get_name()).as_bytes().to_vec();
+                let mut pre = format!("{MODE} {}", e.get_name()).as_bytes().to_vec();
                 pre.push(b"\x00"[0]);
                 pre.extend(e.get_oid().as_bytes());
                 pre
             })
             .collect();
 
+        debug!("Data size is {}", self.data.len());
         &self.data
-    }
-
-    fn get_data_len(&self) -> usize {
-        self.data.len()
     }
 
     fn set_oid(&mut self, hash: String) {

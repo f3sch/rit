@@ -12,6 +12,17 @@ impl Types {
             Self::Tree => String::from("tree"),
         }
     }
+
+    pub fn as_type(s: String) -> Types {
+        if s == "blob" {
+            return Types::Blob;
+        }
+        if s == "tree" {
+            return Types::Tree;
+        }
+
+        panic!("Type {} not recognized, corrupt db?", s);
+    }
 }
 
 pub trait Object {
@@ -20,9 +31,6 @@ pub trait Object {
 
     /// Turn the data into its bytes.
     fn get_data(&mut self) -> &Vec<u8>;
-
-    /// Get the data length.
-    fn get_data_len(&self) -> usize;
 
     /// Set the `Object` id.
     fn set_oid(&mut self, hash: String);
