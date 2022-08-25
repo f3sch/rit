@@ -29,8 +29,14 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
     d.read_to_string(&mut s)
         .with_context(|| "CatFile: Zlib decoding issues")?;
     debug!("Object: '{}'", s);
+    let size_space = s
+        .find(|c: char| c == ' ')
+        .with_context(|| "CatFile: No first space separating `type` and `len`")?;
+    let size_null = s
+        .find(|c: char| c == '\x00')
+        .with_context(|| "CatFile: No first null-byte marking end of `len`")?;
 
-    match Types::as_type(String::from(&s[0..4])) {
+    match Types::as_type(String::from(&s[0..size_space])) {
         Types::Blob => {
             let null = s
                 .find(|c: char| c == '\x00')
@@ -43,14 +49,8 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
             println!("'''");
         }
         Types::Tree => {
-            let size_space = s
-                .find(|c: char| c == ' ')
-                .with_context(|| "CatFile: No first space separating `tree` and `len`")?;
-            let size_null = s
-                .find(|c: char| c == '\x00')
-                .with_context(|| "CatFile: No first null-byte marking end of `len`")?;
             let mut prev = size_null;
-            // Print tree
+            // TODO Print tree
             println!("Type: Tree");
             println!("Size: {}", &s[size_space..size_null]);
             println!("Content:\n'''");
@@ -64,6 +64,13 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
                         prev = i;
                     }
                 });
+            println!("'''");
+        }
+        Types::Commit => {
+            // let mut prev = size_null + 1;
+            // TODO Print commit
+            println!("Type: Commit");
+            println!("Size: {}", &s[size_space..size_null]);
             println!("'''");
         }
     }

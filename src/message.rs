@@ -29,6 +29,11 @@ impl Message {
         self.message.clone()
     }
 
+    /// Get author.
+    pub fn get_author(&self) -> Author {
+        self.author.clone()
+    }
+
     /// Construct a `Message` from a `Commit`.
     pub fn from_commit(commit: &Commit) -> Result<Self> {
         let name = get_author(commit).with_context(|| "Message: Could not get author's name")?;

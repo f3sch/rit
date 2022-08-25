@@ -1,13 +1,84 @@
-use crate::{cli::Commit, *};
+use crate::*;
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::{
     env::{current_dir, var},
-    io,
+    fmt::Display,
+    fs::File,
+    io::{self, Write},
 };
 
+/// The `Commit` `Object` is another implementation of the established `Blob` and
+/// `Tree` pattern.
+pub struct Commit {
+    /// The `Tree` id the `Commit` belongs to.
+    oid: String,
+
+    /// Type.
+    type_: Types,
+
+    /// The `Message` attached to this commit.
+    message: Message,
+
+    /// Data field
+    data: Vec<u8>,
+}
+
+impl Commit {
+    /// Create a new `Commit`.
+    pub fn new(tree: String, message: Message) -> Self {
+        trace!("Creating Commit");
+        Self {
+            oid: tree,
+            type_: Types::Commit,
+            message,
+            data: Vec::new(),
+        }
+    }
+}
+
+impl Display for Commit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f)?;
+        write!(f, "{:?}", self.data)?;
+        writeln!(f)?;
+
+        Ok(())
+    }
+}
+
+impl Object for Commit {
+    fn get_type(&self) -> Types {
+        trace!("Getting type, should be commit");
+        self.type_
+    }
+
+    fn get_data(&mut self) -> &Vec<u8> {
+        trace!("Getting data of commit");
+        let mut s = String::new();
+        s.push_str(&format!("tree {}\n", self.oid));
+        s.push_str(&format!("author {}\n", self.message.get_author()));
+        s.push_str(&format!("committer {}\n", self.message.get_author()));
+        s.push('\n');
+        s.push_str(&format!("{}\n", self.message.get_message()));
+        self.data.extend(s.as_bytes().to_vec());
+
+        &self.data
+    }
+
+    fn set_oid(&mut self, hash: String) {
+        trace!("Setting oid of blob");
+        self.oid = hash;
+    }
+
+    fn get_oid(&self) -> Option<String> {
+        trace!("Getting oid of blob");
+        Some(self.oid.clone())
+    }
+}
+
 /// Create the directory structure of a repository.
-pub fn make_commit(commit: Commit) -> Result<()> {
+pub fn make_commit(commit: cli::Commit) -> Result<()> {
     trace!("Committing to repository");
     debug!("Got arguments: {:?}", commit);
 
@@ -58,7 +129,30 @@ pub fn make_commit(commit: Commit) -> Result<()> {
     let message = Message::from_commit(&commit)
         .with_context(|| "Commit: Failed to construct commit message")?;
     debug!("{}", message);
+    let commit = &mut Commit::new(
+        tree.get_oid()
+            .with_context(|| "Commit: Tree should have oid set")?,
+        message,
+    );
+    database
+        .store(commit)
+        .with_context(|| "Commit: Failed to store commit")?;
 
+    // store HEAD
+    let mut f = File::options()
+        .write(true)
+        .create(true)
+        .open(git_path.join("HEAD"))
+        .with_context(|| "Commit: Cannot create HEAD")?;
+    f.write(
+        commit
+            .get_oid()
+            .with_context(|| "Commit: Is stored, should have oid set")?
+            .as_bytes(),
+    )
+    .with_context(|| "Commit: Writing HEAD unsuccessful")?;
+
+    info!("Commit: OK");
     Ok(())
 }
 
@@ -68,7 +162,7 @@ pub fn make_commit(commit: Commit) -> Result<()> {
 ///     2.  TODO local config
 ///     3.  environment variable `GIT_AUTHOR_NAME`
 ///     4.  TODO global config
-pub fn get_author(commit: &Commit) -> Result<String> {
+pub fn get_author(commit: &cli::Commit) -> Result<String> {
     trace!("Getting author's name");
     // check commit command
     if commit.author.is_some() {
@@ -92,7 +186,7 @@ pub fn get_author(commit: &Commit) -> Result<String> {
 ///     2.  TODO local config
 ///     3.  environment variable `GIT_AUTHOR_EMAIL`
 ///     4.  TODO global config
-pub fn get_email(commit: &Commit) -> Result<String> {
+pub fn get_email(commit: &cli::Commit) -> Result<String> {
     trace!("Getting author's email");
     // check commit command
     if commit.email.is_some() {
@@ -114,7 +208,7 @@ pub fn get_email(commit: &Commit) -> Result<String> {
 ///     1. message flag
 ///     2. TODO via opening `GIT_MESSAGE`
 ///     3. reading from stdin
-pub fn get_message(commit: &Commit) -> Result<String> {
+pub fn get_message(commit: &cli::Commit) -> Result<String> {
     trace!("Getting commit message");
 
     // from command
@@ -126,9 +220,14 @@ pub fn get_message(commit: &Commit) -> Result<String> {
     // read from stdin
     let mut buffer = String::new();
     let stdin = io::stdin();
-    stdin
-        .read_line(&mut buffer)
-        .with_context(|| "Commit: Failed to read from stdin")?;
+    stdin.lines().for_each(|line| {
+        buffer.push_str(
+            &line
+                .with_context(|| "Commit: Failed to read from stdin")
+                .unwrap(),
+        );
+        buffer.push('\n');
+    });
     if !buffer.is_empty() {
         debug!("Got from stdin");
         return Ok(buffer);

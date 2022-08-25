@@ -3,6 +3,7 @@
 pub enum Types {
     Blob,
     Tree,
+    Commit,
 }
 
 impl Types {
@@ -10,6 +11,7 @@ impl Types {
         match self {
             Self::Blob => String::from("blob"),
             Self::Tree => String::from("tree"),
+            Self::Commit => String::from("commit"),
         }
     }
 
@@ -19,6 +21,9 @@ impl Types {
         }
         if s == "tree" {
             return Types::Tree;
+        }
+        if s == "commit" {
+            return Types::Commit;
         }
 
         panic!("Type {} not recognized, corrupt db?", s);

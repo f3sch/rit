@@ -8,6 +8,7 @@ use log::{debug, trace};
 
 /// The `Author` object packages up the name, the email and the time values
 /// that form contents of the author and committer headers in a `Commit`.
+#[derive(Clone, Debug)]
 pub struct Author {
     /// Author's name.
     pub name: String,
@@ -24,12 +25,14 @@ impl Author {
     /// This automatically calculates the timezone offset.
     pub fn new(name: String, email: String, time: String) -> Self {
         trace!("Creating a new author");
-        let time = format!(
-            "{} {}",
-            time,
-            // Calculate the timezone offset
-            Local.timestamp(0, 0).offset().fix().local_minus_utc()
-        );
+        // Calculate the timezone offset
+        let offset = Local.timestamp(0, 0).offset().fix().local_minus_utc();
+        let sign: String = if offset < 0 {
+            String::from("-")
+        } else {
+            String::from("+")
+        };
+        let time = format!("{} {}{}", time, sign, offset);
         debug!("Author.time: {}", time);
 
         Self { name, email, time }
