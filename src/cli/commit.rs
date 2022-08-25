@@ -11,4 +11,8 @@ pub struct Commit {
     /// Set the author's email of this commit.
     #[clap(short, long, value_parser)]
     pub email: Option<String>,
+
+    /// Set the commit message.
+    #[clap(short, long, value_parser)]
+    pub message: Option<String>,
 }
