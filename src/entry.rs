@@ -19,7 +19,10 @@ impl Entry {
     /// Create a new `Entry`.
     pub fn new(name: PathBuf, oid: String) -> Self {
         Self {
-            name: String::from(name.to_str().unwrap()),
+            name: name
+                .into_os_string()
+                .into_string()
+                .expect("Entry: Could not convert path to string"),
             oid,
         }
     }
