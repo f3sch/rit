@@ -4,6 +4,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 
+use crate::Lockfile;
+
 /// `Refs` manages all files under ~.git/refs~.
 /// It also can update HEAD.
 pub struct Refs {
@@ -25,14 +27,25 @@ impl Refs {
     /// Update HEAD to point to a new `Tree`.
     pub fn update_head(&self, oid: String) -> Result<()> {
         trace!("Updating HEAD to {}", oid);
-        let mut f = File::options()
-            .write(true)
-            .read(false)
-            .create(true)
-            .open(self.head_path())
-            .with_context(|| "Commit: Cannot create HEAD")?;
-        f.write(oid.as_bytes())
-            .with_context(|| "Commit: Writing HEAD unsuccessful")?;
+        let mut lockfile = Lockfile::new(self.head_path())
+            .with_context(|| "Refs: Failed to create lockfile while updating HEAD")?;
+
+        if lockfile
+            .hold_for_update()
+            .with_context(|| "Refs: Lockfile creation went wrong")?
+        {
+            bail!("Could not acquire lock on file: {:?}", self.head_path());
+        }
+
+        lockfile
+            .write(oid)
+            .with_context(|| "Refs: lockfile write failed while updating HEAD")?;
+        lockfile
+            .write("\n".to_string())
+            .with_context(|| "Refs: lockfile write failed while updating HEAD")?;
+        lockfile
+            .commit()
+            .with_context(|| "Refs: Could not write changes to HEAD")?;
 
         Ok(())
     }

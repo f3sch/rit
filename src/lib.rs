@@ -27,3 +27,6 @@ pub use env::*;
 
 pub mod refs;
 pub use refs::*;
+
+pub mod lockfile;
+pub use lockfile::*;
