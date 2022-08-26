@@ -26,13 +26,13 @@ impl Author {
     pub fn new(name: String, email: String, time: String) -> Self {
         trace!("Creating a new author");
         // Calculate the timezone offset
-        let offset = Local.timestamp(0, 0).offset().fix().local_minus_utc();
+        let offset = Local.timestamp(0, 0).offset().fix().local_minus_utc() / 3600 + 1;
         let sign: String = if offset < 0 {
             String::from("-")
         } else {
             String::from("+")
         };
-        let time = format!("{} {}{}", time, sign, offset);
+        let time = format!("{} {}{:02}00", time, sign, offset);
         debug!("Author.time: {}", time);
 
         Self { name, email, time }
