@@ -69,6 +69,12 @@ impl Database {
         debug!("dirname is {:?}", dirname);
         debug!("temp_name is {:?}", temp_name);
 
+        // do not write duplicates
+        if object_path.exists() {
+            debug!("{:?} does already exist, skipping...", object_path);
+            return Ok(());
+        }
+
         // if dirname does not exist create it
         if !dirname.exists() {
             create_dir(dirname).with_context(|| "Database: Failed to create directory")?;
