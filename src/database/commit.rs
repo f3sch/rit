@@ -11,6 +11,9 @@ pub struct Commit {
     /// Type.
     type_: Types,
 
+    /// Possible parent of `Commit`.
+    parent: Option<String>,
+
     /// The `Message` attached to this commit.
     message: Message,
 
@@ -20,11 +23,12 @@ pub struct Commit {
 
 impl Commit {
     /// Create a new `Commit`.
-    pub fn new(tree: String, message: Message) -> Self {
+    pub fn new(parent: Option<String>, tree: String, message: Message) -> Self {
         trace!("Creating Commit");
         Self {
             oid: tree,
             type_: Types::Commit,
+            parent,
             message,
             data: Vec::new(),
         }
@@ -51,6 +55,9 @@ impl Object for Commit {
         trace!("Getting data of commit");
         let mut s = String::new();
         s.push_str(&format!("tree {}\n", self.oid));
+        if let Some(parent) = &self.parent {
+            s.push_str(&format!("parent {}\n", parent));
+        }
         s.push_str(&format!("author {}\n", self.message.get_author()));
         s.push_str(&format!("committer {}\n", self.message.get_author()));
         s.push('\n');

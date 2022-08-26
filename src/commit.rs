@@ -2,8 +2,6 @@ use crate::*;
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::env::current_dir;
-use std::fs::File;
-use std::io::Write;
 
 /// Create the directory structure of a repository.
 pub fn make_commit(commit: cli::Commit) -> Result<()> {
@@ -28,6 +26,7 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     let workspace =
         Workspace::new(&root_path).with_context(|| "Commit: Could not load workspace!")?;
     let database = Database::new(&db_path).with_context(|| "Commit: Could not load database")?;
+    let refs = Refs::new(git_path).with_context(|| "Commit: Could not load refs")?;
 
     // collect entries for the tree
     let mut entries: Vec<Entry> = Vec::new();
@@ -54,10 +53,14 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
         .with_context(|| "Commit: Database failed to store the new tree")?;
 
     // Get commit message
+    let parent = refs
+        .read_head()
+        .with_context(|| "Commit: Could not get parent")?;
     let message = Message::from_commit(&commit)
         .with_context(|| "Commit: Failed to construct commit message")?;
     debug!("{}", message);
     let commit = &mut database::Commit::new(
+        parent,
         tree.get_oid()
             .with_context(|| "Commit: Tree should have oid set")?,
         message,
@@ -65,20 +68,12 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     database
         .store(commit)
         .with_context(|| "Commit: Failed to store commit")?;
-
-    // store HEAD
-    let mut f = File::options()
-        .write(true)
-        .create(true)
-        .open(git_path.join("HEAD"))
-        .with_context(|| "Commit: Cannot create HEAD")?;
-    f.write(
+    refs.update_head(
         commit
             .get_oid()
-            .with_context(|| "Commit: Is stored, should have oid set")?
-            .as_bytes(),
+            .with_context(|| "Commit: Is stored, should have oid set")?,
     )
-    .with_context(|| "Commit: Writing HEAD unsuccessful")?;
+    .with_context(|| "Commit: Updating HEAD unsuccessful")?;
 
     info!("Commit: OK");
     Ok(())
