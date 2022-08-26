@@ -48,7 +48,8 @@ impl Object for Tree {
             .flat_map(|e| {
                 let mut pre = format!("{MODE} {}", e.get_name()).as_bytes().to_vec();
                 pre.push(b"\x00"[0]);
-                pre.extend(e.get_oid().as_bytes());
+                let oid = hex::decode(e.get_oid()).expect("Tree: Could not decode hex");
+                pre.extend(oid);
                 pre
             })
             .collect();
