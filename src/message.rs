@@ -36,8 +36,12 @@ impl Message {
 
     /// Construct a `Message` from a `Commit`.
     pub fn from_commit(commit: &Commit) -> Result<Self> {
-        let name = get_author(commit).with_context(|| "Message: Could not get author's name")?;
-        let email = get_email(commit).with_context(|| "Message: Could not get author's email")?;
+        let name = commit
+            .get_author()
+            .with_context(|| "Message: Could not get author's name")?;
+        let email = commit
+            .get_email()
+            .with_context(|| "Message: Could not get author's email")?;
         let time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .with_context(|| "Message: Could not get the time")?
@@ -45,7 +49,8 @@ impl Message {
             .to_string();
         Ok(Self {
             author: Author::new(name, email, time),
-            message: get_message(commit)
+            message: commit
+                .get_message()
                 .with_context(|| "Message: Could not get commit message")?,
         })
     }
