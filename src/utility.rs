@@ -15,7 +15,12 @@ pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
         .filter_map(|v| v.ok()) // is file ok
         .filter(|e| !is_ignored(e)) // is ignored
         .for_each(|entry| {
-            vec.push(entry.path().to_path_buf()); // add to `vec`
+            let strip = entry
+                .path()
+                .strip_prefix(path)
+                .expect("Utility: Could not strip prefix")
+                .to_path_buf();
+            vec.push(strip); // add to `vec`
         });
 
     // Warning for empty repository.
