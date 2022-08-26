@@ -19,23 +19,8 @@ pub use utility::*;
 pub mod database;
 pub use database::*;
 
-pub mod blob;
-pub use blob::*;
-
 pub mod types;
 pub use types::*;
 
-pub mod entry;
-pub use entry::*;
-
-pub mod tree;
-pub use tree::*;
-
 pub mod env;
 pub use env::*;
-
-pub mod message;
-pub use message::*;
-
-pub mod author;
-pub use author::*;

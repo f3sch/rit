@@ -2,78 +2,8 @@ use crate::*;
 use anyhow::{bail, Context, Result};
 use log::*;
 use std::env::current_dir;
-use std::fmt::Display;
 use std::fs::File;
 use std::io::Write;
-
-/// The `Commit` `Object` is another implementation of the established `Blob` and
-/// `Tree` pattern.
-pub struct Commit {
-    /// The `Tree` id the `Commit` belongs to.
-    oid: String,
-
-    /// Type.
-    type_: Types,
-
-    /// The `Message` attached to this commit.
-    message: Message,
-
-    /// Data field
-    data: Vec<u8>,
-}
-
-impl Commit {
-    /// Create a new `Commit`.
-    pub fn new(tree: String, message: Message) -> Self {
-        trace!("Creating Commit");
-        Self {
-            oid: tree,
-            type_: Types::Commit,
-            message,
-            data: Vec::new(),
-        }
-    }
-}
-
-impl Display for Commit {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f)?;
-        write!(f, "{:?}", self.data)?;
-        writeln!(f)?;
-
-        Ok(())
-    }
-}
-
-impl Object for Commit {
-    fn get_type(&self) -> Types {
-        trace!("Getting type, should be commit");
-        self.type_
-    }
-
-    fn get_data(&mut self) -> &Vec<u8> {
-        trace!("Getting data of commit");
-        let mut s = String::new();
-        s.push_str(&format!("tree {}\n", self.oid));
-        s.push_str(&format!("author {}\n", self.message.get_author()));
-        s.push_str(&format!("committer {}\n", self.message.get_author()));
-        s.push('\n');
-        s.push_str(&format!("{}\n", self.message.get_message()));
-        self.data.extend(s.as_bytes().to_vec());
-
-        &self.data
-    }
-
-    fn set_oid(&mut self, hash: String) {
-        trace!("Setting oid of blob");
-        self.oid = hash;
-    }
-
-    fn get_oid(&self) -> Option<String> {
-        trace!("Getting oid of blob");
-        Some(self.oid.clone())
-    }
-}
 
 /// Create the directory structure of a repository.
 pub fn make_commit(commit: cli::Commit) -> Result<()> {
@@ -127,7 +57,7 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     let message = Message::from_commit(&commit)
         .with_context(|| "Commit: Failed to construct commit message")?;
     debug!("{}", message);
-    let commit = &mut Commit::new(
+    let commit = &mut database::Commit::new(
         tree.get_oid()
             .with_context(|| "Commit: Tree should have oid set")?,
         message,

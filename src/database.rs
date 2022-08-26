@@ -1,4 +1,3 @@
-use crate::*;
 use anyhow::{bail, Context, Result};
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
@@ -116,3 +115,18 @@ impl Database {
         format!("tmp_obj_{}", rand)
     }
 }
+
+pub mod object;
+pub use object::Object;
+pub mod commit;
+pub use commit::Commit;
+pub mod blob;
+pub use blob::Blob;
+pub mod tree;
+pub use tree::Tree;
+pub mod entry;
+pub use entry::Entry;
+pub mod author;
+pub use author::Author;
+pub mod message;
+pub use message::Message;
