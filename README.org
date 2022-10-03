@@ -1,0 +1,5 @@
+#+title: rit (rust =g=it)
+
+* About the project
+My own git implementation in ~Rust~.
+I follow [[https://shop.jcoglan.com/building-git/][Building GIT]] by James Coglan.
