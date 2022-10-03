@@ -1,9 +1,6 @@
 use crate::*;
 use log::*;
 
-// static ENTRY_FORMAT: &str = "Z*H40";
-static MODE: &str = "100644";
-
 /// It will be stored by the `Database`.
 pub struct Tree {
     /// Type: `Tree`.
@@ -46,7 +43,9 @@ impl Object for Tree {
             .entries
             .iter()
             .flat_map(|e| {
-                let mut pre = format!("{MODE} {}", e.get_name()).as_bytes().to_vec();
+                let mut pre = format!("{} {}", e.get_mode(), e.get_name())
+                    .as_bytes()
+                    .to_vec();
                 pre.push(b"\x00"[0]);
                 let oid = hex::decode(e.get_oid()).expect("Tree: Could not decode hex");
                 pre.extend(oid);

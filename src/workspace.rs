@@ -1,5 +1,6 @@
 use crate::get_files;
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
+use is_executable::IsExecutable;
 use log::*;
 use std::fs::File;
 use std::io::prelude::*;
@@ -51,4 +52,32 @@ impl Workspace {
             .with_context(|| "Workspace: Could not open file")?;
         Ok(buffer)
     }
+
+    /// Stat a given file path.
+    pub fn stat_file(&self, path: &PathBuf) -> Result<FileStat> {
+        trace!("Getting file stat for {:?}", path);
+
+        // For safety check if file still exists
+        if !path.exists() {
+            bail!("Workspace: File does not exists!");
+        }
+
+        if path.is_dir() {
+            return Ok(FileStat::Dir);
+        } else if path.is_file() && path.is_executable() {
+            return Ok(FileStat::Executable);
+        } else if path.is_file() {
+            return Ok(FileStat::File);
+        }
+
+        bail!("Workspace: Unknown fs type encounterd!");
+    }
+}
+
+/// Enum to define custom file stat modes.
+/// There are really only three we care about.
+pub enum FileStat {
+    Dir,
+    File,
+    Executable,
 }

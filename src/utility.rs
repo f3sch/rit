@@ -1,9 +1,9 @@
 use anyhow::{bail, Result};
 use log::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-/// Given a `path` return all the files recursively except `.`, `..`, `.git` and
+/// Given a `path` return all the files recursively except ``, `.`, `..`, `.git` and
 /// those in `.gitignore`.
 pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
     trace!("Getting all files in repository, path: {:?}", path);
@@ -13,7 +13,7 @@ pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
     WalkDir::new(path)
         .into_iter()
         .filter_map(|v| v.ok()) // is file ok
-        .filter(|e| !is_ignored(e)) // is ignored
+        .filter(|e| !is_ignored(path, e)) // is ignored
         .for_each(|entry| {
             let strip = entry
                 .path()
@@ -33,9 +33,13 @@ pub fn get_files(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 /// Check if the entry is ignored.
-fn is_ignored(entry: &DirEntry) -> bool {
-    // ignore directories
-    if entry.file_type().is_dir() {
+fn is_ignored(base: &Path, entry: &DirEntry) -> bool {
+    trace!("Checking if DirEntry is ignored for {:?}", entry);
+    let path = entry.path();
+    debug!("Path is {:?}", path);
+
+    // Ignore base path
+    if path.file_name() == base.file_name() {
         return true;
     }
 
@@ -44,7 +48,6 @@ fn is_ignored(entry: &DirEntry) -> bool {
         return true;
     }
 
-    let path = entry.path();
     for spath in path.iter() {
         if spath.to_str() == Some(".git") {
             return true;

@@ -48,7 +48,10 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
             .store(blob)
             .with_context(|| "Commit: Failed storing blob")?;
 
-        let entry = Entry::new(path.to_path_buf(), blob.get_oid().unwrap());
+        let stat = workspace
+            .stat_file(path)
+            .with_context(|| "Commit: Could not get filestat")?;
+        let entry = Entry::new(path.to_path_buf(), blob.get_oid().unwrap(), stat);
         entries.push(entry);
     }
 
