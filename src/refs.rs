@@ -52,10 +52,14 @@ impl Refs {
 
     /// Read the HEAD file if it exists and return the content.
     pub fn read_head(&self) -> Result<Option<String>> {
+        trace!("Reading HEAD");
+
         // does file even exist
         if !self.head_path().exists() {
+            debug!("HEAD does not exists (commit maybe parentless)");
             return Ok(None);
         }
+        debug!("HEAD already exists, reading it now");
 
         // read it
         let mut buffer = Vec::new();
@@ -68,6 +72,7 @@ impl Refs {
             .with_context(|| "Refs: Unable to read HEAD")?;
         let s =
             String::from_utf8(buffer).with_context(|| "Refs: Encoding bytes into utf-8 failed")?;
+        debug!("HEAD contains: {s}");
 
         Ok(Some(s))
     }

@@ -56,6 +56,7 @@ impl Object for Commit {
         let mut s = String::new();
         s.push_str(&format!("tree {}\n", self.oid));
         if let Some(parent) = &self.parent {
+            debug!("Parent of commit is: {parent}");
             s.push_str(&format!("parent {}\n", parent));
         }
         s.push_str(&format!("author {}\n", self.message.get_author()));

@@ -56,7 +56,7 @@ impl Lockfile {
                 .open(&self.lock_path)
                 .with_context(|| "Lockfile: Failed to create lockfile")?,
         );
-        debug!("Lock created");
+        debug!("Lock aquired");
 
         Ok(false)
     }

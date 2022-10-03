@@ -42,6 +42,7 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
                 .find(|c: char| c == '\x00')
                 .with_context(|| "CatFile: Blob does not contain null-byte")?;
             // Print blob
+            println!("'''");
             println!("Type: Blob");
             println!("Size: {}", &s[5..null]);
             println!("Content:\n'''");
@@ -51,6 +52,7 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
         Types::Tree => {
             let mut prev = size_null;
             // TODO Print tree
+            println!("'''");
             println!("Type: Tree");
             println!("Size: {}", &s[size_space..size_null]);
             println!("Content:\n'''");
@@ -69,6 +71,7 @@ pub fn print_object(cat_file: CatFile) -> Result<()> {
         Types::Commit => {
             // let mut prev = size_null + 1;
             // TODO Print commit
+            println!("'''");
             println!("Type: Commit");
             println!("Size: {}", &s[size_space..size_null]);
             println!("'''");

@@ -22,11 +22,16 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
         bail!("Commit: {:?} is not a rit repository!", root_path);
     }
 
-    // Get the current workspace.
+    // get the current workspace.
     let workspace =
         Workspace::new(&root_path).with_context(|| "Commit: Could not load workspace!")?;
     let database = Database::new(&db_path).with_context(|| "Commit: Could not load database")?;
     let refs = Refs::new(git_path).with_context(|| "Commit: Could not load refs")?;
+
+    // get commit message
+    let message = Message::from_commit(&commit)
+        .with_context(|| "Commit: Failed to construct commit message")?;
+    debug!("{}", message);
 
     // collect entries for the tree
     let mut entries: Vec<Entry> = Vec::new();
@@ -47,27 +52,31 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
         entries.push(entry);
     }
 
+    // store root tree
     let tree = &mut Tree::new(entries);
     database
         .store(tree)
         .with_context(|| "Commit: Database failed to store the new tree")?;
 
-    // Get commit message
+    // get parent commit
     let parent = refs
         .read_head()
         .with_context(|| "Commit: Could not get parent")?;
-    let message = Message::from_commit(&commit)
-        .with_context(|| "Commit: Failed to construct commit message")?;
-    debug!("{}", message);
+
+    // generate commit
     let commit = &mut database::Commit::new(
         parent,
         tree.get_oid()
             .with_context(|| "Commit: Tree should have oid set")?,
         message,
     );
+
+    // store commit
     database
         .store(commit)
         .with_context(|| "Commit: Failed to store commit")?;
+
+    // update ref to new HEAD
     refs.update_head(
         commit
             .get_oid()
