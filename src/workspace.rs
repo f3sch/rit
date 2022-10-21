@@ -63,6 +63,7 @@ impl Workspace {
         }
 
         if path.is_dir() {
+            // check this first since dirs are always executable
             return Ok(FileStat::Dir);
         } else if path.is_file() && path.is_executable() {
             return Ok(FileStat::Executable);

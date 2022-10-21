@@ -51,7 +51,7 @@ impl Object for Commit {
         self.type_
     }
 
-    fn get_data(&mut self) -> &Vec<u8> {
+    fn get_data(&self) -> Vec<u8> {
         trace!("Getting data of commit");
         let mut s = String::new();
         s.push_str(&format!("tree {}\n", self.oid));
@@ -63,9 +63,8 @@ impl Object for Commit {
         s.push_str(&format!("committer {}\n", self.message.get_author()));
         s.push('\n');
         s.push_str(&format!("{}\n", self.message.get_message()));
-        self.data.extend(s.as_bytes().to_vec());
 
-        &self.data
+        s.as_bytes().to_vec()
     }
 
     fn set_oid(&mut self, hash: String) {

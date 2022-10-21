@@ -33,9 +33,9 @@ impl Object for Blob {
         self.type_
     }
 
-    fn get_data(&mut self) -> &Vec<u8> {
+    fn get_data(&self) -> Vec<u8> {
         trace!("Getting data of blob");
-        &self.data
+        self.data.to_owned()
     }
 
     fn set_oid(&mut self, hash: String) {

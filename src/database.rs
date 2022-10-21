@@ -36,7 +36,10 @@ impl Database {
     }
 
     /// Store a `Blob` in the `Database`.
-    pub fn store(&self, object: &mut dyn Object) -> Result<()> {
+    pub fn store<T>(&self, object: &mut T) -> Result<()>
+    where
+        T: Object,
+    {
         trace!("Storing Object.");
         let type_ = object.get_type().as_string();
         let data = object.get_data();

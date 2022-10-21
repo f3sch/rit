@@ -36,6 +36,9 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     // collect entries for the tree
     let mut entries: Vec<Entry> = Vec::new();
 
+    // iterate through all files in the workspace
+    // files with identical oid are skipped, this prevents unnecessary writes
+    // and makes diffing efficient
     for path in workspace.get_list_files() {
         debug!("Committing {:?} to database.", path);
         let data = workspace
@@ -56,10 +59,13 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     }
 
     // store root tree
-    let tree = &mut Tree::new(entries);
-    database
-        .store(tree)
-        .with_context(|| "Commit: Database failed to store the new tree")?;
+    let root = &mut Tree::build(entries).with_context(|| "Commit: Could not build root tree")?;
+    // root.traverse(&|tree: &mut Tree| {
+    //     database
+    //         .store(tree)
+    //         .with_context(|| "Commit: Database failed to store the new tree")
+    //         .expect("Commit: Traversal of root tree failed");
+    // });
 
     // get parent commit
     let parent = refs
@@ -69,7 +75,7 @@ pub fn make_commit(commit: cli::Commit) -> Result<()> {
     // generate commit
     let commit = &mut database::Commit::new(
         parent,
-        tree.get_oid()
+        root.get_oid()
             .with_context(|| "Commit: Tree should have oid set")?,
         message,
     );

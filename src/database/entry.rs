@@ -11,7 +11,7 @@ const EXECUTABLE_MODE: &str = "100744";
 ///             1. the filename
 ///             2. object id
 ///             3. file mode
-#[derive(PartialEq, PartialOrd, Ord, Eq)]
+#[derive(PartialEq, PartialOrd, Ord, Eq, Clone)]
 pub struct Entry {
     /// Name is the path to the entry
     name: String,

@@ -5,7 +5,7 @@ pub trait Object {
     fn get_type(&self) -> Types;
 
     /// Turn the data into its bytes.
-    fn get_data(&mut self) -> &Vec<u8>;
+    fn get_data(&self) -> Vec<u8>;
 
     /// Set the `Object` id.
     fn set_oid(&mut self, hash: String);
